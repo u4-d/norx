@@ -1,0 +1,73 @@
+name: norx
+description: "A new Flutter project."
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+#resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+  supabase_flutter: ^2.17.2
+  cupertino_icons: ^1.0.8
+
+# 引用 nexa 里的 packages
+  models:
+    git:
+      url: git@github.com:u4-d/nexa.git
+      path: packages/dart/models
+      ref: main
+  
+  app_config:
+    git:
+      url: git@github.com:u4-d/nexa.git
+      path: packages/dart/app_config
+      ref: main
+
+  my_supabase_service:
+    git:
+      url: git@github.com:u4-d/nexa.git
+      path: packages/dart/my_supabase_service
+      ref: main
+
+  my_logger:
+    git:
+      url: git@github.com:u4-d/nexa.git
+      path: packages/dart/my_logger
+      ref: main
+
+  my_analyzer:
+    git:
+      url: git@github.com:u4-d/nexa.git
+      path: packages/dart/my_analyzer
+      ref: main
+
+  ranking:
+    git:
+      url: git@github.com:u4-d/nexa.git
+      path: packages/flutter/stock/ranking
+      ref: main
+
+  utils:
+    git:
+      url: git@github.com:u4-d/nexa.git
+      path: packages/dart/utils
+      ref: main  
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+
+  uses-material-design: true
+
