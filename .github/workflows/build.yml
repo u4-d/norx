@@ -4,6 +4,10 @@ on:
   push:
     branches: [ main ]
 
+# ✅ 1. 显式授予 Actions 写权限
+permissions:
+  contents: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -23,7 +27,7 @@ jobs:
         with:
           flutter-version: '3.x'
 
-      # 4. 强制在 CI 环境注入本地路径重写（指向 ../nexa）
+      # 4. 强制在 CI 环境注入本地路径重写
       - name: Force Local Path Overrides
         run: |
           cat << 'EOF' > pubspec_overrides.yaml
@@ -44,7 +48,7 @@ jobs:
               path: ../nexa/packages/dart/utils
           EOF
 
-      # 5. 执行依赖安装（现在 Dart 会完全走本地相对路径，不会再报 Git 冲突）
+      # 5. 执行依赖安装
       - name: Install Dependencies
         run: flutter pub get
 
