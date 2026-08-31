@@ -1,29 +1,39 @@
-name: Build and Test
+name: Build and Deploy Flutter Web
 
 on:
   push:
     branches: [ main ]
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout norx code
         uses: actions/checkout@v4
 
-      # ✅ 使用 Token 配置 Git 凭据
+      # 1. 配置 Git 凭据（用于拉取私有包 nexa）
       - name: Configure Git Credentials
         run: |
           git config --global url."https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/".insteadOf "https://github.com/"
           git config --global url."https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/".insteadOf "git@github.com:"
 
+      # 2. 安装 Flutter 环境
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.x'
 
+      # 3. 安装依赖
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Build
-        run: flutter build web
+      # 4. 构建 Web 静态资源（--base-href 必须与仓库名一致）
+      - name: Build Web
+        run: flutter build web --base-href "/norx/"
+
+      # 5. 自动推送产物到 gh-pages 分支
+      - name: Deploy to GitHub Pages
+        uses: PeaceIris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web
