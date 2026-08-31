@@ -11,7 +11,7 @@ jobs:
       - name: Checkout norx code
         uses: actions/checkout@v4
 
-      # 1. 配置 Git 凭据（用于拉取私有包 nexa）
+      # 1. 配置 Git 凭据（用于自动拉取 nexa 私有仓库）
       - name: Configure Git Credentials
         run: |
           git config --global url."https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/".insteadOf "https://github.com/"
@@ -23,27 +23,52 @@ jobs:
         with:
           flutter-version: '3.x'
 
-      # 3. 强制对齐云端的依赖来源，防止子包去 pub.dev 找私有包
-      - name: Override Sub-package Dependencies
+      # 3. 核心步骤：自动将本地 path: ../nexa/ 转换生成 CI 用的 pubspec_overrides.yaml
+      - name: Auto-generate CI Pubspec Overrides
         run: |
-          cat << 'EOF' > pubspec_overrides.yaml
-          dependency_overrides:
-            my_supabase_service:
-              git:
-                url: https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/u4-d/nexa.git
-                path: packages/dart/my_supabase_service
-                ref: main
-          EOF
+          python3 -c '
+          import yaml
 
-      # 4. 安装依赖
+          with open("pubspec.yaml", "r") as f:
+              data = yaml.safe_load(f)
+
+          overrides = {}
+          
+          # 读取 pubspec.yaml 中的 dependency_overrides 或 dependencies
+          sources = [data.get("dependency_overrides", {}), data.get("dependencies", {})]
+          for src in sources:
+              if not src:
+                  continue
+              for name, spec in src.items():
+                  if isinstance(spec, dict) and "path" in spec:
+                      path_val = spec["path"]
+                      # 如果使用了 ../nexa/ 相对路径，转换为 Git 依赖
+                      if "../nexa/" in path_val:
+                          relative_path = path_val.replace("../nexa/", "")
+                          overrides[name] = {
+                              "git": {
+                                  "url": "https://github.com/u4-d/nexa.git",
+                                  "path": relative_path,
+                                  "ref": "main"
+                              }
+                          }
+
+          with open("pubspec_overrides.yaml", "w") as f:
+              yaml.dump({"dependency_overrides": overrides}, f, default_flow_style=False)
+          '
+          
+          echo "=== 自动生成的 pubspec_overrides.yaml 内容 ==="
+          cat pubspec_overrides.yaml
+
+      # 4. 安装依赖（Dart 会自动加载上面生成的 pubspec_overrides.yaml）
       - name: Install Dependencies
         run: flutter pub get
 
-      # 4. 构建 Web 静态资源（--base-href 必须与仓库名一致）
+      # 5. 构建 Web 静态资源
       - name: Build Web
         run: flutter build web --base-href "/norx/"
 
-      # 5. 自动推送产物到 gh-pages 分支
+      # 6. 自动推送产物到 gh-pages 分支
       - name: Deploy to GitHub Pages
         uses: PeaceIris/actions-gh-pages@v3
         with:
