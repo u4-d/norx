@@ -12,16 +12,16 @@ jobs:
       - name: Checkout norx code
         uses: actions/checkout@v4
 
-      # 2. 配置 Git Token 凭据（用于拉取私有库 nexa）
+      # 2. 配置 Git Credentials
       - name: Configure Git Credentials
         run: |
           git config --global url."https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/".insteadOf "https://github.com/"
           git config --global url."https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/".insteadOf "git@github.com:"
 
-      # 3. 核心步骤：直接将 nexa 仓库 Clone 到同级目录 ../nexa
+      # 3. 显式使用 Token Clone 私有仓库 nexa 到同级的 ../nexa
       - name: Checkout nexa code to relative path
         run: |
-          git clone --depth 1 https://github.com/u4-d/nexa.git ../nexa
+          git clone --depth 1 https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/u4-d/nexa.git ../nexa
 
       # 4. 安装 Flutter 环境
       - name: Set up Flutter
