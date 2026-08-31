@@ -23,7 +23,19 @@ jobs:
         with:
           flutter-version: '3.x'
 
-      # 3. 安装依赖
+      # 3. 强制对齐云端的依赖来源，防止子包去 pub.dev 找私有包
+      - name: Override Sub-package Dependencies
+        run: |
+          cat << 'EOF' > pubspec_overrides.yaml
+          dependency_overrides:
+            my_supabase_service:
+              git:
+                url: https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/u4-d/nexa.git
+                path: packages/dart/my_supabase_service
+                ref: main
+          EOF
+
+      # 4. 安装依赖
       - name: Install Dependencies
         run: flutter pub get
 
