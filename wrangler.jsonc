@@ -1,0 +1,7 @@
+{
+  "name": "nexa-pages",
+  "compatibility_date": "2026-08-28",
+  "assets": {
+    "directory": "my_pages/build/web"
+  }
+}
