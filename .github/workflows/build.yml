@@ -11,11 +11,11 @@ jobs:
       - name: Checkout norx code
         uses: actions/checkout@v4
 
-      # 如果 nexa 是私有仓库，配置 SSH 私钥以拉取私有 Git 依赖
-      - name: Set up SSH Key for private dependencies
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.NEXA_DEPLOY_KEY }}
+      # ✅ 使用 Token 配置 Git 凭据
+      - name: Configure Git Credentials
+        run: |
+          git config --global url."https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/".insteadOf "https://github.com/"
+          git config --global url."https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/".insteadOf "git@github.com:"
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -26,4 +26,4 @@ jobs:
         run: flutter pub get
 
       - name: Build
-        run: flutter build web # 或对应的平台构建命令
+        run: flutter build web
