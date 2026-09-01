@@ -1,14 +1,36 @@
 #!/bin/bash
 set -e
 
-# 1. 下载 Flutter SDK
-git clone https://github.com/flutter/flutter.git -b stable --depth 1 ../flutter
+# 1. 下载 Flutter SDK (浅克隆)
+if [ ! -d "../flutter" ]; then
+  git clone https://github.com/flutter/flutter.git -b stable --depth 1 ../flutter
+fi
 export PATH="$PATH:$(pwd)/../flutter/bin"
 
-# 2. 拉取私有库 nexa
-git clone https://$DART_WORKFLOW_TRIGGER@github.com/u4-d/nexa.git ../nexa
+# 2. 【核心优化】对 nexa 进行稀疏检出 (Sparse Checkout)
+echo "==> Performing sparse checkout for nexa..."
+mkdir -p ../nexa
+cd ../nexa
+git init
+git config core.sparseCheckout true
 
-# 3. 生成本地路径重写 pubspec_overrides.yaml
+# 设定只拉取 norx 依赖的 packages 路径（按需添加文件夹）
+cat << 'EOF' > .git/info/sparse-checkout
+packages/dart/models
+packages/dart/app_config
+packages/dart/my_supabase_service
+packages/dart/my_logger
+packages/dart/my_analyzer
+packages/dart/utils
+packages/flutter/stock/ranking
+EOF
+
+# 配置远程仓库并仅拉取 main 分支最新 1 次 Commit
+git remote add origin https://$DART_WORKFLOW_TRIGGER@github.com/u4-d/nexa.git
+git pull --depth 1 origin main
+cd ../norx  # 切回 norx 目录
+
+# 3. 动态生成本地路径重写 pubspec_overrides.yaml
 cat << 'EOF' > pubspec_overrides.yaml
 dependency_overrides:
   models:
@@ -27,6 +49,6 @@ dependency_overrides:
     path: ../nexa/packages/dart/utils
 EOF
 
-# 4. 安装依赖并构建 Web
+# 4. 安装依赖并编译 Web
 flutter pub get
 flutter build web

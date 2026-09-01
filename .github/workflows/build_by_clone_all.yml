@@ -1,0 +1,65 @@
+# 全量拉取克隆nexa后编译
+name: Build and Deploy Clone All
+
+on:
+  #push:
+    #branches: [ main ]
+  workflow_dispatch: # ✅ 添加这行，开启手动触发按钮
+# ✅ 1. 显式授予 Actions 写权限
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 拉取 norx 仓库
+      - name: Checkout norx code
+        uses: actions/checkout@v4
+
+      # 2. 拉取私有仓库 nexa 到同级目录 ../nexa
+      - name: Checkout nexa code to relative path
+        run: |
+          git clone --depth 1 https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/u4-d/nexa.git ../nexa
+
+      # 3. 安装 Flutter 环境
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+
+      # 4. 强制在 CI 环境注入本地路径重写
+      - name: Force Local Path Overrides
+        run: |
+          cat << 'EOF' > pubspec_overrides.yaml
+          dependency_overrides:
+            models:
+              path: ../nexa/packages/dart/models
+            app_config:
+              path: ../nexa/packages/dart/app_config
+            my_supabase_service:
+              path: ../nexa/packages/dart/my_supabase_service
+            my_logger:
+              path: ../nexa/packages/dart/my_logger
+            my_analyzer:
+              path: ../nexa/packages/dart/my_analyzer
+            ranking:
+              path: ../nexa/packages/flutter/stock/ranking
+            utils:
+              path: ../nexa/packages/dart/utils
+          EOF
+
+      # 5. 执行依赖安装
+      - name: Install Dependencies
+        run: flutter pub get
+
+      # 6. 构建 Web 静态资源
+      - name: Build Web
+        run: flutter build web --base-href "/norx/"
+
+      # 7. 自动推送产物到 gh-pages 分支
+      - name: Deploy to GitHub Pages
+        uses: PeaceIris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./build/web

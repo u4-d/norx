@@ -1,10 +1,11 @@
-name: Build and Deploy Flutter Web
+# 只拉取克隆nexa需要的部分进行编译
+name: Build and Deploy By Needs
 
 on:
   push:
     branches: [ main ]
-
-# ✅ 1. 显式授予 Actions 写权限
+  workflow_dispatch: # ✅ 添加这行，开启手动触发按钮
+# ✅ 显式授予 Actions 写权限
 permissions:
   contents: write
 
@@ -16,10 +17,27 @@ jobs:
       - name: Checkout norx code
         uses: actions/checkout@v4
 
-      # 2. 拉取私有仓库 nexa 到同级目录 ../nexa
-      - name: Checkout nexa code to relative path
+      # 2. 【已优化】利用 Sparse-Checkout 按需拉取 nexa 必需的 packages
+      - name: Sparse Checkout nexa packages
         run: |
-          git clone --depth 1 https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/u4-d/nexa.git ../nexa
+          mkdir -p ../nexa
+          cd ../nexa
+          git init
+          git config core.sparseCheckout true
+          
+          # 写入需要的 7 个子包目录
+          cat << 'EOF' > .git/info/sparse-checkout
+          packages/dart/models
+          packages/dart/app_config
+          packages/dart/my_supabase_service
+          packages/dart/my_logger
+          packages/dart/my_analyzer
+          packages/flutter/stock/ranking
+          packages/dart/utils
+          EOF
+          
+          git remote add origin https://${{ secrets.DART_WORKFLOW_TRIGGER }}@github.com/u4-d/nexa.git
+          git pull --depth 1 origin main
 
       # 3. 安装 Flutter 环境
       - name: Set up Flutter
