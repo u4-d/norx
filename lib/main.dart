@@ -3,12 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:my_supabase_service/my_supabase_service.dart';
 import 'package:norx/src/login/auth_page.dart';
 
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-final AppConfig appConfig = ConfigFactory.web();
-  final SupabaseService supabase=SupabaseService(appConfig);
-  runApp(MyApp(supabase: supabase,));
+  final AppConfig appConfig = ConfigFactory.web();
+  final SupabaseService supabase = SupabaseService(appConfig);
+  runApp(MyApp(supabase: supabase));
 }
 
 class MyApp extends StatelessWidget {
@@ -29,7 +28,7 @@ class MyApp extends StatelessWidget {
           final session = supabase.auth.currentUser;
           // 如果已登录则展示主页，否则展示登录/注册页
           if (session != null) {
-            return HomePage(supabase: supabase,);
+            return HomePage(supabase: supabase);
           }
           return const AuthPage();
         },
@@ -55,10 +54,7 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
-      body: Center(
-        child: Text('欢迎回来, ${user?.email}'),
-      ),
+      body: Center(child: Text('欢迎回来, ${user?.email}')),
     );
   }
 }
-

@@ -4,8 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'package:my_supabase_service/my_supabase_service.dart';
 
-
-
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});
 
@@ -21,7 +19,7 @@ class _AuthPageState extends State<AuthPage> {
   bool _isLoginMode = true; // true 为登录模式，false 为注册模式
   bool _isLoading = false;
   bool _obscurePassword = true;
-final AppConfig appConfig = ConfigFactory.web();
+  final AppConfig appConfig = ConfigFactory.web();
   late final AuthService _auth; // 先声明类型
 
   @override
@@ -51,16 +49,16 @@ final AppConfig appConfig = ConfigFactory.web();
       if (_isLoginMode) {
         await _auth.signInWithEmail(email: email, password: password);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('登录成功！')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('登录成功！')));
         }
       } else {
         await _auth.signUpWithEmail(email: email, password: password);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('注册成功！请检查邮箱进行验证或直接登录。')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('注册成功！请检查邮箱进行验证或直接登录。')));
         }
       }
     } on AuthException catch (e) {
@@ -114,9 +112,8 @@ final AppConfig appConfig = ConfigFactory.web();
                       // 标题
                       Text(
                         _isLoginMode ? '欢迎登录' : '创建新账号',
-                        style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 32),
@@ -153,7 +150,9 @@ final AppConfig appConfig = ConfigFactory.web();
                                   : Icons.visibility,
                             ),
                             onPressed: () {
-                              setState(() => _obscurePassword = !_obscurePassword);
+                              setState(
+                                () => _obscurePassword = !_obscurePassword,
+                              );
                             },
                           ),
                         ),
@@ -178,7 +177,9 @@ final AppConfig appConfig = ConfigFactory.web();
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : Text(
                                 _isLoginMode ? '登 录' : '注 册',
@@ -197,11 +198,7 @@ final AppConfig appConfig = ConfigFactory.web();
                                   _formKey.currentState?.reset();
                                 });
                               },
-                        child: Text(
-                          _isLoginMode
-                              ? '还没有账号？点击注册'
-                              : '已有账号？点击登录',
-                        ),
+                        child: Text(_isLoginMode ? '还没有账号？点击注册' : '已有账号？点击登录'),
                       ),
                     ],
                   ),
