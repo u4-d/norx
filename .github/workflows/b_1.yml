@@ -2,8 +2,9 @@
 name: Build and Deploy Flutter Web
 
 on:
-  push:
-    branches: [ main ]
+  #push:
+    #branches: [ main ]
+  workflow_dispatch: # ✅ 添加这行，开启手动触发按钮
 
 jobs:
   build-and-deploy:
